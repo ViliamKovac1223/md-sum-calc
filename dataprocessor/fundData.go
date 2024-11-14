@@ -19,11 +19,11 @@ type FundData struct {
 func (fund *FundData) CalcSums() {
     var totalSum float64 = 0
     for i := range fund.Sums {
-        var sum float64 = 0;
+        var sum float64 = 0
         for j:= range fund.Sums[i].Records {
-            sum += fund.Sums[i].Records[j].Sum;
+            sum += fund.Sums[i].Records[j].Sum
         }
-        fund.Sums[i].Sum = sum;
+        fund.Sums[i].Sum = sum
         totalSum += sum
     }
     fund.TotalSum = totalSum
