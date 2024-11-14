@@ -1,4 +1,4 @@
-package main
+package dataprocessor
 
 import (
 	"errors"
@@ -71,8 +71,7 @@ func (reader *DataReader) ReadFromString(data string) (FundData, error) {
         }
 
         // Check if a line is a basic record
-        if strings.HasPrefix(line, "- ") {
-            if reader.wasRecordSumPresent {
+        if strings.HasPrefix(line, "- ") { if reader.wasRecordSumPresent {
                 return fundData, errors.New(fmt.Sprintf(
                     "There cannot be a new record after sum was defined; line: %d", i))
             }

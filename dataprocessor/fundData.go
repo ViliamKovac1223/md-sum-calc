@@ -1,4 +1,4 @@
-package main
+package dataprocessor
 
 type FundDataRecord struct {
     Date string
@@ -16,7 +16,7 @@ type FundData struct {
     TotalSum float64
 }
 
-func (fund *FundData) calcSums() {
+func (fund *FundData) CalcSums() {
     var totalSum float64 = 0
     for i := range fund.Sums {
         var sum float64 = 0;

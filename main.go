@@ -1,16 +1,16 @@
 package main
 
 import (
+	"csvsumcalc/dataprocessor"
 	"fmt"
 	"log"
 	"os"
 )
 
 func main() {
-    // fundFile := "fund.yaml"
     fundFile := "data.md"
 
-    // Read the yaml file
+    // Read data file
     rawData, err := os.ReadFile(fundFile)
     if err != nil {
         log.Fatal(err)
@@ -19,14 +19,14 @@ func main() {
     data := string(rawData)
     fmt.Println(data)
 
-    var reader DataReader
+    var reader dataprocessor.DataReader
     fundData, err := reader.ReadFromString(data)
     if err != nil {
         fmt.Fprintln(os.Stderr ,err)
         os.Exit(1)
     }
 
-    fundData.calcSums()
+    fundData.CalcSums()
     fmt.Println(fundData)
 
     newStringData, err := reader.UpdateString(data, fundData)
