@@ -14,6 +14,7 @@ const (
     HEADER_PREFIX = "#"
     RECORD_PREFIX = "- "
     SUM_PREFIX = "- sum:"
+    TOTAL_SUM_PREFIX = "- total sum:"
     COMMENT_PREFIX = "<!--"
     COMMENT_SUFFIX = "-->"
     COMMENT_REGEX = COMMENT_PREFIX + ".*" + COMMENT_SUFFIX
@@ -23,9 +24,11 @@ type DataReader struct {
     data string
     record SingleFundData
     wasRecordSumPresent bool
+    wasTotalSumPresent bool
     line string
     lineNumber int
     isFirstRecord bool
+    totalSum float64
 }
 
 func (reader *DataReader) ReadFromString(data string) (FundData, error) {
@@ -47,6 +50,7 @@ func (reader *DataReader) ReadFromString(data string) (FundData, error) {
     }
     // Add last processed record
     fundData.Sums = append(fundData.Sums, reader.record)
+    fundData.TotalSum = reader.totalSum
 
     return fundData, nil
 }
@@ -62,9 +66,15 @@ func (reader *DataReader) UpdateString(originalString string, fundData FundData)
         reader.lineNumber = i + 1
 
         if strings.HasPrefix(line, SUM_PREFIX) {
-            reader.updateSum(fundData.Sums[numberOfSums].Sum)
+            reader.updateSum(fundData.Sums[numberOfSums].Sum, SUM_PREFIX)
             numberOfSums++
 
+            // Update line with the new sum
+            lines[i] = reader.line
+        }
+
+        if strings.HasPrefix(line, TOTAL_SUM_PREFIX) {
+            reader.updateSum(fundData.TotalSum, TOTAL_SUM_PREFIX)
             // Update line with the new sum
             lines[i] = reader.line
         }
@@ -78,9 +88,9 @@ func (reader *DataReader) UpdateString(originalString string, fundData FundData)
     return strings.Join(lines, "\n"), nil
 }
 
-func (reader *DataReader) updateSum(newSum float64) {
+func (reader *DataReader) updateSum(newSum float64, prefix string) {
     // Get old sum from the original line
-    sumNumber := strings.TrimPrefix(reader.line, SUM_PREFIX)
+    sumNumber := strings.TrimPrefix(reader.line, prefix)
     sumNumber = reader.removeCommentFromEndOfTheLine(sumNumber)
     sumNumber = strings.TrimSpace(sumNumber)
     // Convert newSum to the string
@@ -109,6 +119,11 @@ func (reader *DataReader) processLine(fundData *FundData) error {
     // Check if a line is a sum record
     if strings.HasPrefix(reader.line, SUM_PREFIX) {
         return reader.processSum()
+    }
+
+    // Check if a line is a total sum record
+    if strings.HasPrefix(reader.line, TOTAL_SUM_PREFIX) {
+        return reader.processTotalSum()
     }
 
     // Check if a line is a basic record
@@ -142,7 +157,7 @@ func (reader *DataReader) processSum() error {
     // If there are two sums in one record then throw error
     if reader.wasRecordSumPresent {
         return errors.New(
-            fmt.Sprintf("There can only be one sum under each header; line: %d", 
+            fmt.Sprintf("There can be only one sum under each header; line: %d", 
             reader.lineNumber))
     }
     reader.wasRecordSumPresent = true
@@ -158,6 +173,30 @@ func (reader *DataReader) processSum() error {
         return errors.New(fmt.Sprintf("Invalid number on line %d", reader.lineNumber))
     }
     reader.record.Sum = num
+
+    return nil
+}
+
+func (reader *DataReader) processTotalSum() error {
+    // There can be only one total sum record present,
+    // if there are two throw an error
+    if reader.wasTotalSumPresent {
+        return errors.New(
+            fmt.Sprintf("There can be only one total sum record; line: %d", 
+            reader.lineNumber))
+    }
+
+    // Remove TOTAL_SUM_PREFIX from the string
+    sumNumber := strings.TrimPrefix(reader.line, TOTAL_SUM_PREFIX)
+    // Remove any comment that might be left
+    sumNumber = reader.removeCommentFromEndOfTheLine(sumNumber)
+    sumNumber = strings.TrimSpace(sumNumber)
+    num, err := strconv.ParseFloat(sumNumber, 64)
+
+    if err != nil {
+        return errors.New(fmt.Sprintf("Invalid number on line %d", reader.lineNumber))
+    }
+    reader.totalSum = num
 
     return nil
 }
