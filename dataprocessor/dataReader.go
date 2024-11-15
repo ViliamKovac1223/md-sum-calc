@@ -75,8 +75,7 @@ func (reader *DataReader) UpdateString(originalString string, fundData FundData)
     }
 
     // Return new updated string
-    newData := strings.Join(lines, "\n")
-    return newData[:len(newData)-1], nil
+    return strings.Join(lines, "\n"), nil
 }
 
 func (reader *DataReader) updateSum(newSum float64) {
