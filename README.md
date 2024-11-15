@@ -38,3 +38,8 @@ go build
 cp mdsumcalc /path/that/is/in/syste/path/
 mdsumcalc -f /path/to/file.md
 ```
+
+# Warranty
+None of the authors, contributors, administrators, or anyone else connected
+with this project, in any way whatsoever, can be responsible for your use of
+this project.
