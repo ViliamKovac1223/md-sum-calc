@@ -1,7 +1,7 @@
 package main
 
 import (
-	"csvsumcalc/dataprocessor"
+	"mdsumcalc/dataprocessor"
 	"fmt"
 	"log"
 	"os"
